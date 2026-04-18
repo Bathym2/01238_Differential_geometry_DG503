@@ -17,7 +17,7 @@ def _make_point_subs(pt, coords):
     raise TypeError("pt must be a dict or list/tuple/Matrix of coordinate values.")
 
 
-def calculate_curvature_operator(g_matrix: sp.Matrix, coords: list) -> dict:
+def curvature_operator(g_matrix: sp.Matrix, coords: list) -> dict:
     """
     Calculates the curvature operator components R^m_{ijk} for a metric g.
 
@@ -49,7 +49,7 @@ def calculate_curvature_operator(g_matrix: sp.Matrix, coords: list) -> dict:
     return Rop
 
 
-def calculate_curvature_tensor(g_matrix: sp.Matrix, coords: list) -> dict:
+def curvature_tensor(g_matrix: sp.Matrix, coords: list) -> dict:
     """
     Calculates the fully lowered curvature tensor R_{ijkm} from the curvature operator.
 
@@ -61,7 +61,7 @@ def calculate_curvature_tensor(g_matrix: sp.Matrix, coords: list) -> dict:
         A dict mapping index tuples (i, j, k, m) to sympy expressions.
     """
     dim = len(coords)
-    Rop = calculate_curvature_operator(g_matrix, coords)
+    Rop = curvature_operator(g_matrix, coords)
     Rten = {}
 
     for i in range(dim):
@@ -76,7 +76,7 @@ def calculate_curvature_tensor(g_matrix: sp.Matrix, coords: list) -> dict:
     return Rten
 
 
-def calculate_sectional_curvature(
+def sectional_curvature(
     g_matrix: sp.Matrix,
     pt,
     X_vec,
@@ -100,7 +100,7 @@ def calculate_sectional_curvature(
     X = sp.Matrix(X_vec)
     Y = sp.Matrix(Y_vec)
     g_at_pt = g_matrix.subs(subs_pt)
-    Rten = calculate_curvature_tensor(g_matrix, coords)
+    Rten = curvature_tensor(g_matrix, coords)
 
     numerator = sum(
         Rten[(i, j, k, m)].subs(subs_pt) * X[i] * Y[j] * Y[k] * X[m]
@@ -117,7 +117,7 @@ def calculate_sectional_curvature(
     return sp.simplify(numerator / denominator)
 
 
-def calculate_ricci_tensor_on_vectors(
+def ricci_tensor_on_vectors(
     g_matrix: sp.Matrix,
     pt,
     X_vec,
@@ -142,7 +142,7 @@ def calculate_ricci_tensor_on_vectors(
     Y = sp.Matrix(Y_vec)
     g_at_pt = g_matrix.subs(subs_pt)
     g_inv_at_pt = g_at_pt.inv()
-    Rten = calculate_curvature_tensor(g_matrix, coords)
+    Rten = curvature_tensor(g_matrix, coords)
 
     value = sum(
         Rten[(i, j, k, m)].subs(subs_pt)
@@ -157,7 +157,7 @@ def calculate_ricci_tensor_on_vectors(
     return sp.simplify(value)
 
 
-def calculate_ricci_curvature(
+def ricci_curvature(
     g_matrix: sp.Matrix,
     pt,
     X_vec,
@@ -179,10 +179,10 @@ def calculate_ricci_curvature(
     X = sp.Matrix(X_vec)
     g_at_pt = g_matrix.subs(subs_pt)
     eX = X / calculate_g_norm(g_at_pt, X)
-    return calculate_ricci_tensor_on_vectors(g_matrix, pt, eX, eX, coords)
+    return ricci_tensor_on_vectors(g_matrix, pt, eX, eX, coords)
 
 
-def calculate_scalar_curvature(
+def scalar_curvature(
     g_matrix: sp.Matrix,
     pt,
     coords: list,
@@ -201,7 +201,7 @@ def calculate_scalar_curvature(
     subs_pt = _make_point_subs(pt, coords)
     g_at_pt = g_matrix.subs(subs_pt)
     g_inv_at_pt = g_at_pt.inv()
-    Rten = calculate_curvature_tensor(g_matrix, coords)
+    Rten = curvature_tensor(g_matrix, coords)
 
     scalar = sum(
         Rten[(i, j, k, m)].subs(subs_pt)
