@@ -95,6 +95,46 @@ def calculate_g_norm(g_matrix: sp.Matrix, V: sp.Matrix) -> sp.Expr:
     """
     return sp.simplify(sp.sqrt((V.T * g_matrix * V)[0, 0]))
 
+
+def calculate_g_cross_product(g_matrix: sp.Matrix, V: sp.Matrix, W: sp.Matrix) -> sp.Matrix:
+    """
+    Calculates the cross product of two vectors V and W in a 3D Riemannian metric g.
+
+    The result X is defined so that:
+      - g(X, V) = 0
+      - g(X, W) = 0
+      - ||X||_g = ||V||_g ||W||_g sin(theta)
+    and the orientation is chosen so that {V, W, X} is positively oriented.
+    """
+    V = sp.Matrix(V).reshape(3, 1)
+    W = sp.Matrix(W).reshape(3, 1)
+    if g_matrix.shape != (3, 3):
+        raise ValueError("Metric matrix must be 3x3 for a 3D cross product.")
+    det_g = sp.simplify(g_matrix.det())
+    if det_g == 0:
+        raise ValueError("Metric matrix must be non-singular.")
+
+    g_inv = g_matrix.inv()
+    sqrt_det_g = sp.sqrt(det_g)
+    X = sp.zeros(3, 1)
+
+    for i in range(3):
+        val = 0
+        for m in range(3):
+            for j in range(3):
+                for k in range(3):
+                    val += (
+                        g_inv[i, m]
+                        * sqrt_det_g
+                        * sp.LeviCivita(m, j, k)
+                        * V[j, 0]
+                        * W[k, 0]
+                    )
+        X[i, 0] = sp.simplify(val)
+
+    return X
+
+
 def calculate_lie_derivative_metric(g_matrix: sp.Matrix, X_vec: sp.Matrix, coords: list) -> sp.Matrix:
     """
     Calculates the Lie derivative of a metric matrix g with respect to a vector field X.
