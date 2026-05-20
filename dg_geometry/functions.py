@@ -1,6 +1,6 @@
 import sympy as sp
 
-def calculate_jacobi_function(r_vec: sp.Matrix, params: list) -> sp.Expr:
+def jacobi_function(r_vec: sp.Matrix, params: list) -> sp.Expr:
     """
     Calculates the absolute valued Jacobi function for a vector function r_vec.
     Generalizes arc length element (1D), surface area element (2D), and volume element (3D).
@@ -42,7 +42,7 @@ def calculate_jacobi_function(r_vec: sp.Matrix, params: list) -> sp.Expr:
 
     return sp.simplify(jacobi)
 
-def calculate_signed_jacobi_function(r_vec: sp.Matrix, params: list) -> sp.Expr:
+def signed_jacobi_function(r_vec: sp.Matrix, params: list) -> sp.Expr:
     """
     Calculates the signed Jacobi function for a vector function r_vec.
     Matches logic where 1D and 2D return magnitudes, and 3D returns the determinant.
@@ -81,14 +81,14 @@ def calculate_signed_jacobi_function(r_vec: sp.Matrix, params: list) -> sp.Expr:
 
     return sp.simplify(jacobi)
 
-def calculate_g_dot(g_matrix: sp.Matrix, V: sp.Matrix, W: sp.Matrix) -> sp.Expr:
+def g_dot(g_matrix: sp.Matrix, V: sp.Matrix, W: sp.Matrix) -> sp.Expr:
     """
     Calculates the dot product of two vectors V and W with respect to the metric g.
     Matches DG503[Gdot] logic (V^T * g * W).
     """
     return sp.simplify((V.T * g_matrix * W)[0, 0])
 
-def calculate_g_norm(g_matrix: sp.Matrix, V: sp.Matrix) -> sp.Expr:
+def g_norm(g_matrix: sp.Matrix, V: sp.Matrix) -> sp.Expr:
     """
     Calculates the norm of a vector V with respect to the metric g.
     Matches DG503[Gnrm] logic (sqrt(V^T * g * V)).
@@ -96,7 +96,7 @@ def calculate_g_norm(g_matrix: sp.Matrix, V: sp.Matrix) -> sp.Expr:
     return sp.simplify(sp.sqrt((V.T * g_matrix * V)[0, 0]))
 
 
-def calculate_g_cross_product(g_matrix: sp.Matrix, V: sp.Matrix, W: sp.Matrix) -> sp.Matrix:
+def g_cross_product(g_matrix: sp.Matrix, V: sp.Matrix, W: sp.Matrix) -> sp.Matrix:
     """
     Calculates the cross product of two vectors V and W in a 3D Riemannian metric g.
 
@@ -135,7 +135,7 @@ def calculate_g_cross_product(g_matrix: sp.Matrix, V: sp.Matrix, W: sp.Matrix) -
     return X
 
 
-def calculate_lie_derivative_metric(g_matrix: sp.Matrix, X_vec: sp.Matrix, coords: list) -> sp.Matrix:
+def lie_derivative_metric(g_matrix: sp.Matrix, X_vec: sp.Matrix, coords: list) -> sp.Matrix:
     """
     Calculates the Lie derivative of a metric matrix g with respect to a vector field X.
     Matches DG503[LieG] logic.
@@ -154,7 +154,7 @@ def calculate_lie_derivative_metric(g_matrix: sp.Matrix, X_vec: sp.Matrix, coord
             lie_g[i, j] = sp.simplify(val)
     return lie_g
 
-def calculate_lie_bracket(X_vec: sp.Matrix, Y_vec: sp.Matrix, coords: list) -> sp.Matrix:
+def lie_bracket(X_vec: sp.Matrix, Y_vec: sp.Matrix, coords: list) -> sp.Matrix:
     """
     Calculates the Lie bracket [X, Y] of two vector fields.
     Matches DG503[LieVec] logic.
@@ -171,7 +171,7 @@ def calculate_lie_bracket(X_vec: sp.Matrix, Y_vec: sp.Matrix, coords: list) -> s
         res[i] = sp.simplify(val)
     return res
 
-def calculate_christoffel_symbols(g_matrix: sp.Matrix, coords: list) -> dict:
+def christoffel_symbols(g_matrix: sp.Matrix, coords: list) -> dict:
     """
     Calculates the Christoffel symbols of the second kind for a metric matrix g.
     Matches DG503[ChristoffelAll] logic.
@@ -202,7 +202,7 @@ def calculate_christoffel_symbols(g_matrix: sp.Matrix, coords: list) -> dict:
     return chris
 
 
-def calculate_covariant_derivative_along_curve(
+def covariant_derivative_along_curve(
     g_matrix: sp.Matrix,
     gamma_vec: sp.Matrix,
     V_vec: sp.Matrix,
@@ -225,7 +225,7 @@ def calculate_covariant_derivative_along_curve(
     dim = len(coords)
     gamma_vec = sp.Matrix(gamma_vec)
     V_vec = sp.Matrix(V_vec)
-    chris = calculate_christoffel_symbols(g_matrix, coords)
+    chris = christoffel_symbols(g_matrix, coords)
     gamma_prime = [sp.diff(gamma_vec[i], t) for i in range(dim)]
     subs_map = {coords[i]: gamma_vec[i] for i in range(dim)}
 
@@ -241,7 +241,7 @@ def calculate_covariant_derivative_along_curve(
     return result
 
 
-def calculate_curve_acceleration(
+def curve_acceleration(
     g_matrix: sp.Matrix,
     gamma_vec: sp.Matrix,
     t: sp.Symbol,
@@ -261,10 +261,10 @@ def calculate_curve_acceleration(
     """
     gamma_vec = sp.Matrix(gamma_vec)
     gamma_prime = sp.Matrix([sp.diff(gamma_vec[i], t) for i in range(len(coords))])
-    return calculate_covariant_derivative_along_curve(g_matrix, gamma_vec, gamma_prime, t, coords)
+    return covariant_derivative_along_curve(g_matrix, gamma_vec, gamma_prime, t, coords)
 
 
-def calculate_divergence(
+def divergence(
     g_matrix: sp.Matrix,
     V_vec: sp.Matrix,
     coords: list,
@@ -282,7 +282,7 @@ def calculate_divergence(
     """
     dim = len(coords)
     V_vec = sp.Matrix(V_vec)
-    chris = calculate_christoffel_symbols(g_matrix, coords)
+    chris = christoffel_symbols(g_matrix, coords)
 
     divergence = sum(sp.diff(V_vec[i], coords[i]) for i in range(dim))
     divergence += sum(
@@ -293,7 +293,7 @@ def calculate_divergence(
     return sp.simplify(divergence)
 
 
-def calculate_conductive_divergence(
+def conductive_divergence(
     g_matrix: sp.Matrix,
     V_vec: sp.Matrix,
     W_matrix: sp.Matrix,
@@ -313,10 +313,10 @@ def calculate_conductive_divergence(
     """
     V_vec = sp.Matrix(V_vec)
     U_vec = W_matrix * V_vec
-    return calculate_divergence(g_matrix, U_vec, coords)
+    return divergence(g_matrix, U_vec, coords)
 
 
-def calculate_gradient(
+def gradient(
     g_matrix: sp.Matrix,
     f: sp.Expr,
     coords: list,
@@ -342,7 +342,7 @@ def calculate_gradient(
     return grad
 
 
-def calculate_hessian(
+def hessian(
     g_matrix: sp.Matrix,
     f: sp.Expr,
     coords: list,
@@ -359,7 +359,7 @@ def calculate_hessian(
         A sympy Matrix with components H_{ij} = f_{,ij} - Gamma^k_{ij} f_{,k}.
     """
     dim = len(coords)
-    chris = calculate_christoffel_symbols(g_matrix, coords)
+    chris = christoffel_symbols(g_matrix, coords)
     H = sp.zeros(dim, dim)
     f_grad = [sp.diff(f, coords[k]) for k in range(dim)]
     for i in range(dim):
@@ -370,7 +370,7 @@ def calculate_hessian(
     return H
 
 
-def calculate_conductive_hessian(
+def conductive_hessian(
     g_matrix: sp.Matrix,
     f: sp.Expr,
     W_matrix: sp.Matrix,
@@ -388,11 +388,11 @@ def calculate_conductive_hessian(
     Returns:
         A sympy Matrix for the W-Hessian: W * Hessian(f).
     """
-    H = calculate_hessian(g_matrix, f, coords)
+    H = hessian(g_matrix, f, coords)
     return sp.simplify(W_matrix * H)
 
 
-def calculate_laplacian(
+def laplacian(
     g_matrix: sp.Matrix,
     f: sp.Expr,
     coords: list,
@@ -408,6 +408,6 @@ def calculate_laplacian(
     Returns:
         A sympy expression for the Laplacian of f.
     """
-    grad_f = calculate_gradient(g_matrix, f, coords)
-    return calculate_divergence(g_matrix, grad_f, coords)
+    grad_f = gradient(g_matrix, f, coords)
+    return divergence(g_matrix, grad_f, coords)
 

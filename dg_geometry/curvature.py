@@ -1,9 +1,9 @@
 import sympy as sp
 
 from .functions import (
-    calculate_christoffel_symbols,
-    calculate_g_dot,
-    calculate_g_norm,
+    christoffel_symbols,
+    g_dot,
+    g_norm,
 )
 
 
@@ -29,7 +29,7 @@ def curvature_operator(g_matrix: sp.Matrix, coords: list) -> dict:
         A dict mapping index tuples (i, j, k, m) to sympy expressions.
     """
     dim = len(coords)
-    chris = calculate_christoffel_symbols(g_matrix, coords)
+    chris = christoffel_symbols(g_matrix, coords)
     Rop = {}
 
     for i in range(dim):
@@ -110,9 +110,9 @@ def sectional_curvature(
         for m in range(len(coords))
     )
     denominator = (
-        calculate_g_dot(g_at_pt, X, X)
-        * calculate_g_dot(g_at_pt, Y, Y)
-        - calculate_g_dot(g_at_pt, X, Y) ** 2
+        g_dot(g_at_pt, X, X)
+        * g_dot(g_at_pt, Y, Y)
+        - g_dot(g_at_pt, X, Y) ** 2
     )
     return sp.simplify(numerator / denominator)
 
@@ -178,7 +178,7 @@ def ricci_curvature(
     subs_pt = _make_point_subs(pt, coords)
     X = sp.Matrix(X_vec)
     g_at_pt = g_matrix.subs(subs_pt)
-    eX = X / calculate_g_norm(g_at_pt, X)
+    eX = X / g_norm(g_at_pt, X)
     return ricci_tensor_on_vectors(g_matrix, pt, eX, eX, coords)
 
 
